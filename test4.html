@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<style>
+    #app{
+        position: relative;
+    }
+    .bigbox{
+        display: inline-block;
+        font-size: 0;
+        width: 40px;
+        height: 40px;
+    }
+    .box{
+        display: inline-block;
+        font-size: 0;
+        width: 18px;
+        height: 18px;
+        border: 1px solid black;
+    }
+    #piece{
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .piece{
+        position: absolute;
+        /*left: 16px;*/
+        /*top: 16px;*/
+        width: 6px;
+        height: 6px;
+        border: 1px black solid;
+        border-radius: 4px;
+        /*background: black;*/
+    }
+</style>
+<!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
+<body>
+<div id="app">
+    <div class="bigbox">
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <!--<div class="box"></div>-->
+        <!--<div class="box"></div>-->
+        <!--<div class="box"></div>-->
+        <!--<div class="box"></div>-->
+        <!--<div class="box"></div>-->
+    </div>
+    <div id="piece">
+
+    </div>
+    <!--<div v-for="item in all"></div>-->
+</div>
+</body>
+<script>
+    var all=[];
+    var remaining=[];
+    var config={
+        maxX:3,
+        maxY:3
+    };
+    var checkGroup=[];
+    var checkQi=[];
+    function Size(x,y){
+        if (!(this instanceof Size)) {
+            return new Size(x, y);
+        }
+        this.x=x;
+        this.y=y;
+        this.piece=''
+    };
+    function Piece(x,y,type){
+        this.position={
+            x:x,
+            y:y,
+
+        };
+        this.live=true;
+        //计算气
+        this.count=function(){
+            var qi=0;
+            qi=checkGroupQi(this.position.x,this.position.y).length;
+            clearCheckGroup();
+            return qi
+        };
+        this.init=function(){
+            //已有不能重复
+            if(finder(this.position.x,this.position.y).piece!=''){
+                return
+            }else{
+                finder(this.position.x,this.position.y).piece=type;
+                if(this.count()>0){
+                    return
+                }else{
+                    console.log('这个地方不行');
+                    finder(this.position.x,this.position.y).piece=''
+                }
+            }
+
+        }
+    };
+    //根据xy找子
+    function finder(x,y){
+        for(var i=0;i<all.length;i++){
+            if(all[i].x==x && all[i].y==y){
+                return all[i]
+            }
+        }
+    }
+    //1.判断位置不为空 2.相邻是否超出边境 3.相邻其他子
+    //多子气
+    function checkGroupQi(x,y){
+        var type=finder(x,y).piece;
+        //空值直接退出
+        if(type=='' || checkAlreadyHave(x,y)){
+            return []
+        }else{
+            checkGroup.push(finder(x,y));
+        }
+        //判断四至
+        if(x>1 && !checkAlreadyHave(x-1,y)){
+            //同色递归 空的是气 异色无事
+            if(finder(x-1,y).piece==type){
+                // checkGroup.push(finder(x-1,y));
+                checkQi=checkQi.concat(checkGroupQi(x-1,y))
+            }else if(finder(x-1,y).piece==''){
+                //确保新气不会重复
+                if(!checkQiHave(x-1,y)){
+                    checkQi.push([x-1,y])
+                }
+            }else{
+                //没事发生
+            }
+        }
+        if(x<config.maxX && !checkAlreadyHave(x+1,y)){
+            if(finder(x+1,y).piece==type){
+                checkQi=checkQi.concat(checkGroupQi(x+1,y))
+            }else if(finder(x+1,y).piece==''){
+                if(!checkQiHave(x+1,y)){
+                    checkQi.push([x+1,y])
+                }
+            }else{
+                //没事发生
+            }
+        }
+        if(y>1 && !checkAlreadyHave(x,y-1)){
+            if(finder(x,y-1).piece==type){
+                checkQi=checkQi.concat(checkGroupQi(x,y-1));
+            }else if(finder(x,y-1).piece==''){
+                if(!checkQiHave(x,y-1)){
+                    checkQi.push([x,y-1])
+                }
+            }else{
+                //没事发生
+            }
+        }
+        if(y<config.maxY && !checkAlreadyHave(x,y+1)){
+            if(finder(x,y+1).piece==type){
+                checkQi=checkQi.concat(checkGroupQi(x,y+1));
+            }else if(finder(x,y+1).piece==''){
+                if(!checkQiHave(x,y+1)){
+                    checkQi.push([x,y+1])
+                }
+            }else{
+                //没事发生
+            }
+        }
+
+        //数组除重
+        var newArr=[];
+        for(let i=0;i<checkQi.length;i++){
+            var flag=true;
+            for(let j=0;j<newArr.length;j++){
+                if(checkQi[i][0]==newArr[j][0] && checkQi[i][1]==newArr[j][1] ){
+                    flag=false
+                }
+            }
+            if(flag){
+                newArr.push(checkQi[i])
+            }
+        }
+        checkQi=newArr;
+        return checkQi
+    }
+    //每次记得清除这个
+    function clearCheckGroup(){
+        checkGroup=[];
+        checkQi=[];
+    }
+    //检查重复棋子
+    function checkAlreadyHave(x,y){
+        var flag=false;
+        for(var i=0;i<checkGroup.length;i++){
+            if(x==checkGroup[i].x && y==checkGroup[i].y){
+                flag=true
+            }
+        }
+        return flag
+    }
+    //检查重复气
+    function checkQiHave(x,y){
+        var flag=false;
+        for(var i=0;i<checkQi.length;i++){
+            if(x==checkQi[i][0] && y==checkQi[i][1]){
+                flag=true;
+            }
+        }
+        return flag
+    }
+    function rander(){
+        var dom=document.getElementById('piece');
+        dom.innerHTML='';
+        for(let i=0;i<all.length;i++){
+            if(all[i].piece=='black'){
+                dom.innerHTML+='<div class="piece" style="left:'+((all[i].x-1)*20-4)+'px;top:'+((all[i].y-1)*20-4)+'px;background:black;"></div>'
+            }else if(all[i].piece=='white'){
+                dom.innerHTML+='<div class="piece" style="left:'+((all[i].x-1)*20-4)+'px;top:'+((all[i].y-1)*20-4)+'px;background:white;"></div>'
+            }
+        }
+    }
+    (function init(){
+        for(let i=1;i<=config.maxX;i++){
+            for(let j=1;j<=config.maxY;j++){
+                all.push(Size(i,j))
+            }
+        }
+        remaining=all;
+    })();
+    (function test(){
+        var newBlack1=new Piece(2,2,'black');
+        newBlack1.init();
+        var newBlack2=new Piece(2,3,'black');
+        newBlack2.init();
+        var newBlack3=new Piece(3,2,'black');
+        newBlack3.init();
+        var newWhite1=new Piece(3,3,'white');
+        newWhite1.init();
+        rander();
+        console.log(checkGroupQi(2,2))
+    }())
+</script>
+</html>
