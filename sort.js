@@ -95,12 +95,16 @@ function sort2(arr) {
         }
     })(arr,left,right);
     return arr
-
 }
+
+//直接选择排序
+
+
 //建立10000长度随机数组
-var arr1=[];
-var arr2=[];
-var arr3=[];
+var arr1=[],
+    arr2=[],
+    arr3=[],
+    arr4=[];
 for(var i=0;i<10000;i++){
     arr1.push(parseInt(Math.random()*10000))
 }
@@ -109,6 +113,9 @@ for(var i=0;i<10000;i++){
 }
 for(var i=0;i<10000;i++){
     arr3.push(arr1[i])
+}
+for(var i=0;i<10000;i++){
+    arr4.push(arr1[i])
 }
 
 //测试sort排序耗时

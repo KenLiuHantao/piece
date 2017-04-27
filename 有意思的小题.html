@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+</body>
+<script>
+    //黑球白球100个 一次取2个球 颜色一样加个黑球 不一样加白球 问最后一个是黑球的机率
+    var blackTimes= 0,
+        whiteTimes= 0;
+    function getBall(){
+        var all=[];
+        function Ball(color){
+            this.color=color;
+        }
+        for(let i=0;i<100;i++){
+            all.push(new Ball('black'))
+        }
+        for(let i=0;i<110;i++){
+            all.push(new Ball('white'))
+        }
+        function dothis(){
+            if(all.length>1){
+                var random1=parseInt(Math.random()*all.length);
+                //保证2个数不同
+                var random2=(function getRanom2(){
+                    var random=parseInt(Math.random()*all.length);
+                    if(random==random1){
+                        return getRanom2()
+                    }else{
+                        return random
+                    }
+                })();
+                if(all[random1].color==all[random2].color){
+                    if(random1>random2){
+                        all.splice(random1,1);
+                        all.splice(random2,1);
+                        all.push(new Ball('black'))
+                    }else{
+                        all.splice(random2,1);
+                        all.splice(random1,1);
+                        all.push(new Ball('black'))
+                    }
+                }else{
+                    if(random1>random2){
+                        all.splice(random1,1);
+                        all.splice(random2,1);
+                        all.push(new Ball('white'))
+                    }else{
+                        all.splice(random2,1);
+                        all.splice(random1,1);
+                        all.push(new Ball('white'))
+                    }
+                }
+                dothis()
+            }else{
+                if(all[0].color=='black'){
+                    blackTimes++
+                }else{
+                    whiteTimes++
+                }
+            }
+        }
+        dothis()
+    }
+    for(let i=0;i<100;i++){
+        getBall()
+    }
+</script>
+</html>
