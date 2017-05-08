@@ -98,7 +98,10 @@ function sort2(arr) {
 }
 
 //直接选择排序
+function sort3(arr){
+    "use strict";
 
+}
 
 //建立10000长度随机数组
 var arr1=[],
