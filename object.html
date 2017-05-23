@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+</body>
+<script>
+    //变化的回调通知
+    var callback=function(oldObj,newObj){
+        console.log(oldObj+'____________'+newObj)
+    };
+    //定义一个测试对象
+    var data={
+        a:1,
+        lv1:{
+            b:'abc',
+            c:[1,2,'a'],
+            lv2:{
+                d:function(text){
+                    console.log(text)
+                }
+            }
+        }
+    };
+    //设计观察方法
+    const  OP=Object.prototype;
+    function jsonOp(obj,callback){
+        //进来先前置判断
+        if(OP.toString.call(obj)!=='[object Object]'){
+            console.error('This parameter must be an object：' + obj);
+            return
+        }
+
+        observe(obj);
+        //实现观察
+        function observe(obj){
+            Object.keys(obj).forEach(function(key, index, keyArray){
+                var oldVal = obj[key];
+                Object.defineProperty(obj, key, {
+                    get: function(){
+                        return oldVal;
+                    },
+                    set: (function(newVal){
+                        if(oldVal !== newVal){
+                            callback(oldVal,newVal);
+                            oldVal = newVal;
+                        }
+
+                    })
+                });
+                if(OP.toString.call(oldVal) === '[object Object]'){
+                    observe(oldVal);
+                }
+            });
+        }
+        return obj
+    }
+
+    var newData=jsonOp(data,callback);
+    newData.a=2;
+    newData.lv1.b='cba';
+    newData.lv1.lv2.d=function(text){
+        return text
+    }
+</script>
+</html>
